@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AI Content Detector</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      width: 320px;
+      padding: 15px;
+      margin: 0;
+      background: #f8f9fa;
+      color: #333;
+    }
+    h3 { margin-top: 0; font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 8px; }
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: #555; }
+    input[type="text"] {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 13px;
+    }
+    input[type="text"]:focus { outline: none; border-color: #80bdff; box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25); }
+    button {
+      width: 100%;
+      padding: 8px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover { background: #0056b3; }
+    #status {
+      margin-top: 10px;
+      font-size: 13px;
+      text-align: center;
+      color: #28a745;
+      font-weight: bold;
+      min-height: 18px;
+    }
+    .info {
+      font-size: 11px;
+      color: #6c757d;
+      margin-top: 15px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h3>AI Detector API Keys</h3>
+  
+  <div class="form-group">
+    <label for="gptzero">GPTZero API Key (Text)</label>
+    <input type="text" id="gptzero" placeholder="Enter API key for primary text check">
+  </div>
+  
+  <div class="form-group">
+    <label for="copyleaks">Copyleaks API Key (Text Cross-check)</label>
+    <input type="text" id="copyleaks" placeholder="Enter API key for secondary text check">
+  </div>
+  
+  <div class="form-group">
+    <label for="hive">Hive Moderation API Key (Images)</label>
+    <input type="text" id="hive" placeholder="Enter API key for image scanning">
+  </div>
+  
+  <button id="save">Save Settings</button>
+  <div id="status"></div>
+  
+  <div class="info">
+    Usage: Right-click text or images on any webpage and select "Scan for AI". The detector cross-checks APIs and metadata.
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

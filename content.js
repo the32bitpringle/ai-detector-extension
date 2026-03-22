@@ -1,20 +1,61 @@
 let lastRightClickedElement = null;
+const autoScannedElements = new Map();
 
 // Track the element the user right-clicked on
 document.addEventListener('contextmenu', (event) => {
   lastRightClickedElement = event.target;
 }, true);
 
+// Auto-scan feature
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const images = document.querySelectorAll('img');
+    const texts = document.querySelectorAll('p, h1, h2, h3, article, section');
+    const videos = document.querySelectorAll('video, iframe[src*="youtube"], iframe[src*="vimeo"]');
+
+    images.forEach((img, index) => {
+      if (img.src && img.width > 100 && img.height > 100) {
+        const id = `img-${index}`;
+        autoScannedElements.set(id, img);
+        chrome.runtime.sendMessage({ action: "auto-scan-image", srcUrl: img.src, elementId: id });
+      }
+    });
+
+    texts.forEach((text, index) => {
+      const content = text.innerText.trim();
+      if (content.length > 100) {
+        const id = `text-${index}`;
+        autoScannedElements.set(id, text);
+        chrome.runtime.sendMessage({ action: "auto-scan-text", text: content, elementId: id });
+      }
+    });
+
+    videos.forEach((video, index) => {
+      const id = `video-${index}`;
+      autoScannedElements.set(id, video);
+      const src = video.src || video.getAttribute('src');
+      if (src) {
+        chrome.runtime.sendMessage({ action: "auto-scan-video", srcUrl: src, elementId: id });
+      }
+    });
+  }, 2000); // Wait for page to settle
+});
+
 // Listen for messages from background.js
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'start-text-scan' || request.action === 'start-image-scan') {
+  if (request.action === 'start-text-scan' || request.action === 'start-image-scan' || request.action === 'start-video-scan') {
     if (lastRightClickedElement) {
       showLoadingLabel(lastRightClickedElement);
     }
   } else if (request.action === 'scan-result') {
-    if (lastRightClickedElement) {
-      removeLoadingLabel(lastRightClickedElement);
-      showResultLabel(lastRightClickedElement, request.result);
+    let target = lastRightClickedElement;
+    if (request.elementId && autoScannedElements.has(request.elementId)) {
+      target = autoScannedElements.get(request.elementId);
+    }
+
+    if (target) {
+      removeLoadingLabel(target);
+      showResultLabel(target, request.result, request.type);
     }
   }
 });
@@ -23,10 +64,9 @@ function showLoadingLabel(element) {
   const rect = element.getBoundingClientRect();
   const loadingDiv = document.createElement('div');
   loadingDiv.className = 'ai-detector-loading';
-  loadingDiv.textContent = 'Scanning for AI...';
+  loadingDiv.textContent = 'Scanning...';
   
-  // Position above the element
-  loadingDiv.style.top = `${window.scrollY + rect.top - 24}px`;
+  loadingDiv.style.top = `${window.scrollY + rect.top - 20}px`;
   loadingDiv.style.left = `${window.scrollX + rect.left}px`;
   
   document.body.appendChild(loadingDiv);
@@ -40,43 +80,50 @@ function removeLoadingLabel(element) {
   }
 }
 
-function showResultLabel(element, result) {
+function showResultLabel(element, result, type) {
+  // Remove existing label if any
+  if (element._aiLabelDiv) {
+    element._aiLabelDiv.remove();
+  }
+
   const rect = element.getBoundingClientRect();
+  if (rect.width === 0) return; // Hidden element
+
   const labelDiv = document.createElement('div');
-  labelDiv.className = 'ai-detector-label';
+  labelDiv.className = `ai-detector-label ai-tag-${type}`;
   
   if (result.error) {
-    labelDiv.textContent = `⚠️ Error: ${result.error}`;
-    labelDiv.style.backgroundColor = '#dc3545'; // Red
+    labelDiv.textContent = `!`;
+    labelDiv.title = `Error: ${result.error}`;
+    labelDiv.style.backgroundColor = '#6c757d';
   } else {
     const percentage = Math.round(result.probability * 100);
-    let message = `AI Probability: ${percentage}%`;
+    labelDiv.textContent = `${type.toUpperCase()}: ${percentage}%`;
+    labelDiv.title = `Source: ${result.source}`;
     
-    if (result.metadataWarning) {
-      message += ' (Metadata match)';
-    }
-    labelDiv.textContent = message;
-    
-    // Style based on confidence
-    if (percentage > 70) {
-      labelDiv.style.backgroundColor = '#dc3545'; // Red
+    if (percentage > 75) {
+      labelDiv.classList.add('ai-tag-high');
       element.classList.add('ai-detected-highlight');
-    } else if (percentage > 30) {
-      labelDiv.style.backgroundColor = '#fd7e14'; // Orange
+    } else if (percentage > 40) {
+      labelDiv.classList.add('ai-tag-medium');
     } else {
-      labelDiv.style.backgroundColor = '#28a745'; // Green
+      labelDiv.classList.add('ai-tag-low');
     }
   }
 
-  // Position label
-  labelDiv.style.top = `${window.scrollY + rect.top - 24}px`;
-  labelDiv.style.left = `${window.scrollX + rect.left}px`;
+  // Positioning: bottom right of the element
+  labelDiv.style.top = `${window.scrollY + rect.top + 5}px`;
+  labelDiv.style.left = `${window.scrollX + rect.left + 5}px`;
   
   document.body.appendChild(labelDiv);
+  element._aiLabelDiv = labelDiv;
 
-  // Auto-remove after 10 seconds
-  setTimeout(() => {
-    labelDiv.remove();
-    element.classList.remove('ai-detected-highlight');
-  }, 10000);
+  // Add observer to keep label positioned if element moves or window resizes
+  const updatePosition = () => {
+    const newRect = element.getBoundingClientRect();
+    labelDiv.style.top = `${window.scrollY + newRect.top + 5}px`;
+    labelDiv.style.left = `${window.scrollX + newRect.left + 5}px`;
+  };
+  window.addEventListener('scroll', updatePosition);
+  window.addEventListener('resize', updatePosition);
 }

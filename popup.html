@@ -12,7 +12,9 @@
       background: #f8f9fa;
       color: #333;
     }
-    h3 { margin-top: 0; font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 8px; }
+    h3 { margin-top: 0; font-size: 16px; border-bottom: 2px solid #007bff; padding-bottom: 8px; color: #007bff; }
+    .category { margin-bottom: 15px; background: #fff; padding: 10px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .category-title { font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #333; border-left: 3px solid #007bff; padding-left: 8px; }
     .form-group { margin-bottom: 12px; }
     label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: #555; }
     input[type="text"] {
@@ -56,26 +58,63 @@
 <body>
   <h3>AI Detector API Keys</h3>
   
-  <div class="form-group">
-    <label for="gptzero">GPTZero API Key (Text)</label>
-    <input type="text" id="gptzero" placeholder="Enter API key for primary text check">
+  <div class="category">
+    <div class="category-title">Text Detection</div>
+    <div class="form-group">
+      <label for="gptzero">GPTZero API Key</label>
+      <input type="text" id="gptzero" placeholder="Primary text check">
+    </div>
+    <div class="form-group">
+      <label for="copyleaks">Copyleaks API Key</label>
+      <input type="text" id="copyleaks" placeholder="Secondary text check">
+    </div>
+    <div class="form-group">
+      <label for="winston">Winston AI API Key</label>
+      <input type="text" id="winston" placeholder="Winston AI (Text/OCR)">
+    </div>
+    <div class="form-group">
+      <label for="originality">Originality.AI API Key</label>
+      <input type="text" id="originality" placeholder="Originality.AI (SEO)">
+    </div>
+    <div class="form-group">
+      <label for="pangram">Pangram Labs API Key</label>
+      <input type="text" id="pangram" placeholder="Pangram Labs">
+    </div>
   </div>
-  
-  <div class="form-group">
-    <label for="copyleaks">Copyleaks API Key (Text Cross-check)</label>
-    <input type="text" id="copyleaks" placeholder="Enter API key for secondary text check">
+
+  <div class="category">
+    <div class="category-title">Image Detection</div>
+    <div class="form-group">
+      <label for="hive">Hive Moderation API Key</label>
+      <input type="text" id="hive" placeholder="Hive Moderation">
+    </div>
+    <div class="form-group">
+      <label for="sensity">Sensity AI API Key</label>
+      <input type="text" id="sensity" placeholder="Sensity AI">
+    </div>
+    <div class="form-group">
+      <label for="realitydefender">Reality Defender API Key</label>
+      <input type="text" id="realitydefender" placeholder="Reality Defender">
+    </div>
   </div>
-  
-  <div class="form-group">
-    <label for="hive">Hive Moderation API Key (Images)</label>
-    <input type="text" id="hive" placeholder="Enter API key for image scanning">
+
+  <div class="category">
+    <div class="category-title">Video Detection</div>
+    <div class="form-group">
+      <label for="deepware">Deepware API Key</label>
+      <input type="text" id="deepware" placeholder="Deepware">
+    </div>
+    <div class="form-group">
+      <label for="truthscan">Truthscan API Key</label>
+      <input type="text" id="truthscan" placeholder="Truthscan">
+    </div>
   </div>
   
   <button id="save">Save Settings</button>
   <div id="status"></div>
   
   <div class="info">
-    Usage: Right-click text or images on any webpage and select "Scan for AI". The detector cross-checks APIs and metadata.
+    Usage: Auto-scans webpages on load and shows AI Tags. Right-click text, images, or videos for manual scan.
   </div>
 
   <script src="popup.js"></script>
